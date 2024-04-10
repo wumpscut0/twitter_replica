@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  database:
+    image: postgres
+    ports:
+      - "5432"
+    environment:
+      POSTGRES_USER: 1
+      POSTGRES_DB: 1
+      POSTGRES_PASSWORD: 1
+    networks:
+      - bridge
+
+  facebook_replica:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - database
+    networks:
+      - bridge
+
+networks:
+  bridge:
+    driver: bridge
