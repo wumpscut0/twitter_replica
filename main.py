@@ -16,15 +16,11 @@ def build_exception_collector():
 
 def docker_startup():
     sleep(10)
-    subprocess.run("alembic revision --autogenerate", shell=True, cwd='database')
-    subprocess.run("alembic upgrade head", shell=True, cwd='database')
     subprocess.run("uvicorn routers:app --host 0.0.0.0", shell=True)
 
 
 def local_startup():
     build_exception_collector()
-    subprocess.run("alembic revision --autogenerate", shell=True, cwd='database')
-    subprocess.run("alembic upgrade head", shell=True, cwd='database')
     subprocess.run("uvicorn routers:app", shell=True)
 
 

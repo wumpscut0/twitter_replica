@@ -1,4 +1,6 @@
+from contextlib import asynccontextmanager
 from aiofiles import tempfile
+from database.engine import create_all
 from database.queries import (
     add_user,
     load_tweet,
@@ -17,11 +19,23 @@ from database.models import Tweet
 
 import logging
 from fastapi import FastAPI, Request, Header
-from starlette.staticfiles import FileResponse
+from starlette.staticfiles import FileResponse, StaticFiles
 from starlette.responses import JSONResponse
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await create_all()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 exception_collector = logging.getLogger("exception_collector")
+
+app.mount("/css", StaticFiles(directory="static/css"), name="css")
+
+# Монтирование директории для статических файлов JavaScript
+app.mount("/js", StaticFiles(directory="static/js"), name="js")
 
 
 @app.get('/favicon.ico')

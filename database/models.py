@@ -1,7 +1,7 @@
 from typing import Optional, List
 from pydantic import BaseModel
 from sqlalchemy import Table, Integer, ForeignKey, Column, String, ARRAY, LargeBinary
-from sqlalchemy.orm import DeclarativeBase, relationship
+from sqlalchemy.orm import DeclarativeBase, relationship, backref
 
 
 class Base(DeclarativeBase): ...
@@ -22,11 +22,12 @@ follower = Table(
     Column("follower_id", Integer, ForeignKey("user.id"), primary_key=True),
 )
 
-
-class TweetLike(Base):
-    __tablename__ = "tweet_like"
-    tweet_id = Column(Integer, ForeignKey("tweet.id"), primary_key=True)
-    user_id = Column(Integer, ForeignKey("user.id"), primary_key=True)
+tweet_like = Table(
+    "tweet_like",
+    Base.metadata,
+    Column('tweet_id', Integer, ForeignKey("tweet.id"), primary_key=True),
+    Column('user_id', Integer, ForeignKey("user.id"), primary_key=True)
+)
 
 
 class Tweet(Base):
@@ -41,7 +42,7 @@ class Tweet(Base):
     attachments = Column(ARRAY(Integer))
     author = relationship("User", uselist=False)
     users_likes = relationship(
-        "User", secondary="tweet_like", cascade="delete, save-update, merge"
+        "User", secondary="tweet_like", back_populates='likes'
     )
 
 
@@ -72,6 +73,7 @@ class User(Base):
         overlaps="author",
         cascade="delete, save-update, merge",
     )
+    likes = relationship('Tweet', secondary='tweet_like', cascade="delete, save-update, merge")
 
 
 class Image(Base):

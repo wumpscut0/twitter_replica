@@ -2,7 +2,7 @@ from sqlalchemy import select, and_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 from database.engine import session_factory
-from database.models import User, Tweet, Image, TweetLike
+from database.models import User, Tweet, Image
 
 
 async def build_user_as_api_format(user: User):
@@ -137,27 +137,24 @@ async def get_tape(api_key: str):
         return result
 
 
-async def like(tweet_id, api_key: str):
-    user = await get_user_by_api_key(api_key)
+async def like(tweet_id: int, api_key: str):
     async with session_factory() as session:
-        session.add(TweetLike(tweet_id=tweet_id, user_id=user.id))
+        user = (
+            await session.execute(select(User).where(User.api_key == api_key))
+        ).scalar()
+        tweet = (await session.execute(select(Tweet).where(Tweet.id == tweet_id).options(selectinload(Tweet.users_likes)))).scalar()
+        tweet.users_likes.append(user)
         await session.commit()
 
 
-async def unlike(tweet_id, api_key: str):
-    user = await get_user_by_api_key(api_key)
+async def unlike(tweet_id: int, api_key: str):
     async with session_factory() as session:
-        await session.delete(
-            (
-                await session.execute(
-                    select(TweetLike).where(
-                        and_(
-                            TweetLike.tweet_id == tweet_id, TweetLike.user_id == user.id
-                        )
-                    )
-                )
-            ).scalar()
-        )
+        user = (
+            await session.execute(select(User).where(User.api_key == api_key))
+        ).scalar()
+        tweet = (await session.execute(
+            select(Tweet).where(Tweet.id == tweet_id).options(selectinload(Tweet.users_likes)))).scalar()
+        tweet.users_likes.remove(user)
         await session.commit()
 
 
@@ -202,7 +199,13 @@ async def get_image(image_id):
 
 async def follow(user_id: int, api_key: str):
     async with session_factory() as session:
-        subscribe: User = await session.get(User, ident=user_id)
+        subscribe: User = (
+            await session.execute(
+                select(User)
+                .where(User.id == user_id)
+                .options(selectinload(User.followers))
+            )
+        ).scalar()
         follower: User = (
             await session.execute(
                 select(User)
@@ -211,12 +214,19 @@ async def follow(user_id: int, api_key: str):
             )
         ).scalar()
         follower.subscriptions.append(subscribe)
+        subscribe.followers.append(follower)
         await session.commit()
 
 
 async def unfollow(user_id: int, api_key: str):
     async with session_factory() as session:
-        subscribe: User = await session.get(User, ident=user_id)
+        subscribe: User = (
+            await session.execute(
+                select(User)
+                .where(User.id == user_id)
+                .options(selectinload(User.followers))
+            )
+        ).scalar()
         follower: User = (
             await session.execute(
                 select(User)
@@ -226,6 +236,7 @@ async def unfollow(user_id: int, api_key: str):
         ).scalar()
         try:
             follower.subscriptions.remove(subscribe)
+            subscribe.followers.remove(follower)
         except ValueError:
             return
         await session.commit()
@@ -235,9 +246,4 @@ async def unfollow(user_id: int, api_key: str):
 #     async with session_factory.begin() as session:
 #         await session.delete(await session.get(User, ident=user_id))
 #         session.commit()
-#
-#
-# async def delete_image(image_id):
-#     async with session_factory.begin() as session:
-#         await session.delete(await session.get(Image, ident=image_id))
-#         session.commit()
+

@@ -20,13 +20,8 @@ pip install -r requrements.txt
 ```
 BASE=postgresql://username:password@localhost/database_name
 ```
-### 3. Миграция
-Укажите в файле alembic.ini в поле sqlalchemy.url настройку соединения с базой 
-```
-sqlalchemy.url = postgresql://username:password@localhost/database_name
-```
 
-### 4. Запуск
+### 3. Запуск
 Определите функцию local_startup в файле main.py в блоке if __name__ == "__main__":<br>
 и выполните файл main.py
 ```bash
@@ -53,14 +48,9 @@ POSTGRES_PASSWORD: password
 ```
 BASE=postgresql://username:password@localhost/database_name
 ```
-### 2. Миграция
-Укажите в файле alembic.ini в поле sqlalchemy.url настройку соединения с базой 
-```
-sqlalchemy.url = postgresql://username:password@localhost/database_name
-```
 
-### 4. Запуск
-2. Определите функцию docker_startup() в файле main.py в блоке if __name__ == "__main__":<br>
+### 2. Запуск
+Определите функцию docker_startup() в файле main.py в блоке if __name__ == "__main__":<br>
 и примените команду находясь в директории с файлом docker-compose.yml:
 ```bash
 docker-compose up -d
