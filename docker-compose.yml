@@ -6,9 +6,9 @@ services:
     ports:
       - "5432"
     environment:
-      POSTGRES_USER: 1
-      POSTGRES_DB: 1
-      POSTGRES_PASSWORD: 1
+      POSTGRES_USER: test
+      POSTGRES_DB: test
+      POSTGRES_PASSWORD: test
     networks:
       - bridge
 

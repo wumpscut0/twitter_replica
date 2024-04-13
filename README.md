@@ -28,6 +28,9 @@ BASE=postgresql://username:password@localhost/database_name
 python main.py
 ```
 
+### 4. Использование
+Доступ к приложению по умолчанию находится по адресу http://localhost:8000
+
 
 ## Инструкция для запуска через docker
 
@@ -55,5 +58,10 @@ BASE=postgresql://username:password@localhost/database_name
 ```bash
 docker-compose up -d
 ```
+### 3. Использование
+Доступ к приложению по умолчанию находится по адресу http://localhost:8000
+
+### Документаия http://localhost:8000/docs
+
 
 

@@ -1,7 +1,7 @@
 from typing import Optional, List
 from pydantic import BaseModel
 from sqlalchemy import Table, Integer, ForeignKey, Column, String, ARRAY, LargeBinary
-from sqlalchemy.orm import DeclarativeBase, relationship, backref
+from sqlalchemy.orm import DeclarativeBase, relationship
 
 
 class Base(DeclarativeBase): ...
@@ -40,15 +40,22 @@ class Tweet(Base):
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     content = Column(String(300))
     attachments = Column(ARRAY(Integer))
-    author = relationship("User", uselist=False)
+
+    author = relationship(
+        "User",
+        uselist=False,
+        back_populates='tweets'
+    )
     users_likes = relationship(
-        "User", secondary="tweet_like", back_populates='likes'
+        "User",
+        secondary="tweet_like",
+        back_populates='likes',
     )
 
 
 class User(Base):
     __tablename__ = "user"
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     name = Column(String, default="User")
     api_key = Column(String, unique=True, nullable=False)
     subscriptions = relationship(
@@ -56,7 +63,6 @@ class User(Base):
         secondary="subscription",
         primaryjoin=id == subscription.c.subscription_id,
         secondaryjoin=id == subscription.c.user_id,
-        cascade="delete, save-update, merge",
     )
 
     followers = relationship(
@@ -64,16 +70,19 @@ class User(Base):
         secondary=follower,
         primaryjoin=id == follower.c.follower_id,
         secondaryjoin=id == follower.c.user_id,
-        cascade="delete, save-update, merge",
     )
 
     tweets = relationship(
         "Tweet",
         back_populates="author",
-        overlaps="author",
+        cascade='delete, save-update, merge'
+    )
+    likes = relationship(
+        'Tweet',
+        secondary='tweet_like',
+        back_populates='users_likes',
         cascade="delete, save-update, merge",
     )
-    likes = relationship('Tweet', secondary='tweet_like', cascade="delete, save-update, merge")
 
 
 class Image(Base):
