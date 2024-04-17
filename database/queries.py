@@ -1,6 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
+from sqlalchemy import func
 from database.models import User, Tweet, Image
 
 
@@ -79,6 +80,48 @@ async def add_user(session: AsyncSession, api_key: str):
     return user.id
 
 
+# async def get_tape(session: AsyncSession, api_key: str):
+#     users = []
+#     user_subscriptions = []
+#     tweets = []
+#     user = (
+#         await session.execute(
+#             select(User)
+#             .where(User.api_key == api_key)
+#             .options(selectinload(User.tweets), selectinload(User.subscriptions))
+#         )
+#     ).scalar()
+#     users.append(user)
+#
+#     # vvv sorting subscriptions by popularity vvv
+#     for user in user.subscriptions:
+#         user = (
+#             await session.execute(
+#                 select(User)
+#                 .where(User.id == user.id)
+#                 .options(selectinload(User.followers), selectinload(User.tweets))
+#             )
+#         ).scalar()
+#         user_subscriptions.append((len(user.followers), user))
+#     users.extend(
+#         [
+#             user
+#             for quantity_followers, user in sorted(
+#                 user_subscriptions, key=lambda subscribe: subscribe[0], reverse=True
+#             )
+#         ]
+#     )
+#     # ^^^ vvv sorting subscriptions by popularity ^^^
+#
+#     for user in users:
+#         for tweet in user.tweets:
+#             tweets.append(await build_tweet_as_api_format(session, tweet))
+#
+#     tweets.reverse()
+#     result = {"result": True, "tweets": tweets}
+#     return result
+
+
 async def get_tape(session: AsyncSession, api_key: str):
     users = []
     user_subscriptions = []
@@ -106,17 +149,30 @@ async def get_tape(session: AsyncSession, api_key: str):
         [
             user
             for quantity_followers, user in sorted(
-            user_subscriptions, key=lambda subscribe: subscribe[0], reverse=True
-        )
+                user_subscriptions, key=lambda subscribe: subscribe[0], reverse=True
+            )
         ]
     )
     # ^^^ vvv sorting subscriptions by popularity ^^^
 
+    # vvv get subscriptions tweets vvv
+    processed_users = []
     for user in users:
-        for tweet in user.tweets:
-            tweets.append(await build_tweet_as_api_format(session, tweet))
+        processed_users.append(user.id)
+        user_tweets = [await build_tweet_as_api_format(session, tweet) for tweet in user.tweets]
+        user_tweets.reverse()
+        tweets.extend(user_tweets)
+    # ^^^ get subscriptions tweets ^^^
 
-    tweets.reverse()
+    # vvv get tweets other users vvv
+    users = (await session.execute(select(User).filter(~User.id.in_(processed_users)).options(selectinload(User.tweets)))).scalars()
+    print(users)
+    for user in users:
+        user_tweets = [await build_tweet_as_api_format(session, tweet) for tweet in user.tweets]
+        user_tweets.reverse()
+        tweets.extend(user_tweets)
+    # ^^^ vvv get tweets other users ^^^
+
     result = {"result": True, "tweets": tweets}
     return result
 

@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   database:
     image: postgres
@@ -11,6 +9,9 @@ services:
       POSTGRES_PASSWORD: test
     networks:
       - bridge
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
 
   facebook_replica:
     build: .
@@ -24,3 +25,7 @@ services:
 networks:
   bridge:
     driver: bridge
+
+volumes:
+  pg_data:
+    driver: local
