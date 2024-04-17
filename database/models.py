@@ -34,6 +34,7 @@ class Tweet(Base):
     class TweetModel(BaseModel):
         tweet_data: str
         tweet_media_ids: Optional[List[int]]
+
     __tablename__ = "tweet"
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
