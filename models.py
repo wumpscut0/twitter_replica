@@ -2,50 +2,50 @@ from typing import List
 from pydantic import BaseModel
 
 
-class User(BaseModel):
+class UserModel(BaseModel):
     id: int
     name: str
 
 
-class Profile(BaseModel):
+class ProfileModel(BaseModel):
     id: int
     name: str
-    followers: List[User | None]
-    following: List[User | None]
+    followers: List[UserModel | None]
+    following: List[UserModel | None]
 
 
-class UserProfile(BaseModel):
+class UserProfileModel(BaseModel):
     result: bool
-    user: Profile
+    user: ProfileModel
 
 
-class TweetCreate(BaseModel):
+class TweetCreateModel(BaseModel):
     result: bool
     tweet_id: int
 
 
-class MediaCreate(BaseModel):
+class MediaCreateModel(BaseModel):
     result: bool
     media_id: int
 
 
-class Success(BaseModel):
+class SuccessModel(BaseModel):
     result: bool
 
 
-class UserLike(BaseModel):
+class UserLikeModel(BaseModel):
     user_id: int
     name: str
 
 
-class Tweet(BaseModel):
+class TweetModel(BaseModel):
     id: int
     content: str
     attachments: List[int | None]
-    author: User
-    likes: List[UserLike | None]
+    author: UserModel
+    likes: List[UserLikeModel | None]
 
 
-class Tape(BaseModel):
+class TapeModel(BaseModel):
     result: bool
-    tweets: List[Tweet]
+    tweets: List[TweetModel]

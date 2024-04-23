@@ -1,24 +1,24 @@
 services:
-  database:
+  postgres:
     image: postgres
     ports:
       - "5432"
     environment:
-      POSTGRES_USER: test
-      POSTGRES_DB: test
-      POSTGRES_PASSWORD: test
+      POSTGRES_USER: 1
+      POSTGRES_DB: 1
+      POSTGRES_PASSWORD: 1
     networks:
       - bridge
     volumes:
-      - pg_data:/var/lib/postgresql/data
+      - pg_data:/var/lib/postgresql/data_4
 
 
-  facebook_replica:
+  twitter_replica:
     build: .
     ports:
       - "8000:8000"
     depends_on:
-      - database
+      - postgres
     networks:
       - bridge
 

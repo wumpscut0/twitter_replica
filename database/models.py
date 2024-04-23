@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import List
 from pydantic import BaseModel
 from sqlalchemy import Table, Integer, ForeignKey, Column, String, ARRAY, LargeBinary
 from sqlalchemy.orm import DeclarativeBase, relationship
@@ -31,13 +31,13 @@ tweet_like = Table(
 
 
 class Tweet(Base):
-    class TweetModel(BaseModel):
+    class TweetSchema(BaseModel):
         tweet_data: str
-        tweet_media_ids: Optional[List[int]]
+        tweet_media_ids: List[int | None]
 
     __tablename__ = "tweet"
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
     content = Column(String(300))
     attachments = Column(ARRAY(Integer))
 

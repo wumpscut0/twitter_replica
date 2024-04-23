@@ -1,8 +1,5 @@
-import asyncio
-import subprocess
-from time import sleep
-
 import uvicorn
+from time import sleep
 from dotenv import find_dotenv, load_dotenv
 load_dotenv(find_dotenv())
 
